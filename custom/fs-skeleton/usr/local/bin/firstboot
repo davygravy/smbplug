@@ -1,0 +1,153 @@
+#!/bin/sh
+#  /usr/local/bin/firstboot
+#  ... this script should only be called from  /etc/init.d/S99firstboot
+
+mount -o remount,rw /
+
+adduser timemachine <<END
+timemachine
+timemachine
+END
+
+echo
+echo
+echo "= added timemachine user with password timemachine..."
+echo "= change the password to +++something more secure+++!"
+echo "=  ... don't for get to change both the unix [passwd] and the samba password [pdbedit]...."
+echo
+echo
+
+pdbedit -a -u timemachine <<END
+timemachine
+timemachine
+END
+
+
+
+
+
+# grep out file command to see of sda1 is really ext4 as expected
+founde4="`file -sL /dev/sda1  | grep ext4`"
+
+if [ "$founde4" != "" ] ; then
+echo "= sda1 is fstype ext4 as expected, so adding it to fstab..."
+echo
+echo "/dev/sda1 /home/timemachine ext4  errors=remount-ro  	0	 1" >> /etc/fstab
+mount /home/timemachine
+chown -R timemachine /home/timemachine
+echo
+echo
+else
+echo   
+echo "====== a minor problem here ..."
+echo "====== expected to find sda1 of fstype ext4, but not found..."
+echo "====== Remember to set up your /etc/fstab with the correct partition for your timemachine..."
+echo
+fi
+echo
+echo
+
+
+
+
+
+
+echo "= setting up custom config and initscript for Samba..."
+mv /etc/samba/smb.conf /etc/samba/smb.conf-oldbackup
+mv /etc/samba/smb.conf-quickstart /etc/samba/smb.conf
+mv /etc/init.d/S91smb  /etc/init.d/S91smb-oldbackup
+mv /etc/init.d/S91smb-custom  /etc/init.d/S91smb
+
+echo
+echo
+echo
+echo
+
+echo "= fixing some default permissions for Samba and starting it..."
+chmod -R 755 /var/lock
+/etc/init.d/S91smb restart
+
+
+echo "= setting up and restarting your p910nd print server..."
+mv /etc/default/p910nd.conf /etc/p910nd.conf
+echo
+/etc/init.d/S55p910nd restart
+echo
+echo
+echo
+
+echo "= *** Before you try to use it, make sure you edit..."
+echo "= *** the <txt-record>product= identifier in /etc/avahi/service/p910nd.service."
+echo "= *** it is currently set as... "
+echo "=     HP Photosmart C4400 series  "
+echo "= *** The correct form of the name, as shown on a CUPS server..."
+echo "= *** in the style given by CUPS, foomatic or hpijs, is best..."
+echo "= *** since any Bonjour/Avahi-enabled computer will automatically configure it..."
+echo "= *** if you enter it -exactly- right!"
+echo "= "
+echo "= *** Also you will want to change the advertised name of the printer"
+echo "= *** in the line reading  <name replace-wildcards="yes">HP PSC4480 @ %h</name> ."
+echo "= *** It currently reads as..."
+echo "=     HP PSC4480 @ %h "
+echo "= *** but you should leave the   @ %h   alone, since it is a wild card sequence ..."
+echo "= *** that will resolve as  @ your-hostname  under Bonjour or Avahi."
+echo
+echo
+echo
+
+
+sed 's/#Banner none/Banner \/etc\/issue.net/g' /etc/sshd_config > /etc/sshd_config.temp; mv /etc/sshd_config.temp /etc/sshd_config
+/etc/init.d/S50sshd restart
+
+#echo "= removing unneeded Samba component smbta-util"
+#rm /usr/bin/smbta-util
+#echo
+#echo
+#echo
+
+
+
+
+
+
+
+echo "= stopping and disabling inadyn for now ..."
+./etc/init.d/S70inadyn stop
+mv /etc/init.d/S70inadyn /etc/init.d/disabled-S70inadyn
+echo
+echo
+echo
+
+
+
+
+echo
+echo "= finishing up the default installation..."
+echo "= disabling the init script that called this script..."
+mv /etc/init.d/S99firstboot  /etc/init.d/disabled-S99firstboot
+
+
+
+echo
+echo "= *** Stuff to consider changing now..."
+echo "= root password is root , so change it to +++something more secure+++, using passwd."
+echo "= timemachine password is timemachine,  so change it to +++something more secure+++."
+echo "= hostname is currently MacKirkwood, so change it if you wish (like TimeCapsule)."
+echo "= +++ Don't forget to remount it as Read-Only when you are done!"
+echo
+echo
+
+sync
+sleep 1
+echo
+echo "= and remounting the rootfs as read-only."
+mount -o ro,remount /
+echo "= *** If you need to edit something in the rootfs, remount it as read-write :"
+echo "=     mount -o rw,remount /"
+echo "= *** make whatever changes you want to using nano & the like, +++but+++"
+echo "= *** remember to remount it as readonly when you are done..."
+echo "=     mount -o ro,remount /"
+echo 
+echo
+echo
+

@@ -1,0 +1,39 @@
+#!/bin/sh 
+# 
+# Start afp daemon and cnid database meta-daemon
+# 
+start() { 
+        echo "Starting afpd services..."
+	/usr/sbin/cnid_metad ; /bin/sleep 3
+        /usr/sbin/afpd -F /etc/netatalk/afpd.conf
+} 
+
+stop() { 
+        echo "Stopping afpd services..." 
+        killall afpd > /dev/null 2>&1
+	killall cnid_metad > /dev/null 2>&1
+} 
+restart() { 
+        stop 
+        start 
+} 
+
+case "$1" in 
+        start) 
+                start 
+                ;; 
+        stop) 
+                stop 
+                ;; 
+        restart) 
+                restart 
+                ;; 
+        cleanup) 
+                ;; 
+        *) 
+                echo $"Usage: $0 {start|stop|restart}" 
+                exit 1 
+esac 
+
+exit $?
+

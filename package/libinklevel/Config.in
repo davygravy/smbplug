@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBINKLEVEL
+	bool "libinklevel"
+	help
+	  libinklevel is is a library that communicates 
+          with USB and parallel port printers to check
+          and report their ink levels.
+
+	  http://sourceforge.net/projects/libinklevel/

@@ -1,0 +1,15 @@
+[global]
+        netbios name = SMBPLUG
+        interfaces = eth0, 127.0.0.1/255.255.255.0
+        log file = /var/log/log.smbd
+        max log size = 50
+        socket options = TCP_NODELAY SO_RCVBUF=8192 SO_SNDBUF=8192
+        idmap config * : backend = tdb
+        hosts allow = 192.168.0.0/255.255.0.0
+	private dir = /var/log
+
+[timemachine]
+        path = /home/timemachine
+        valid users = timemachine
+        read only = No
+

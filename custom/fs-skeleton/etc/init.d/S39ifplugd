@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# See how we were called.
+case "$1" in
+start)
+        echo -n "Starting ifplugd: "
+        /usr/bin/ifplugd -r /etc/ifplugd.action
+        echo .
+	sleep 5
+	echo "Allowing 5 seconds for interfaces to settle..."
+        ;;
+  stop)
+        echo -n "Shutting down ifplugd: "
+        killall ifplugd
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit 0
